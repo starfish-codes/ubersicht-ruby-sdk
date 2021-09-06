@@ -1,4 +1,5 @@
 require 'bundler/setup'
+require_relative 'support/simplecov'
 require 'ubersicht_ruby_sdk'
 
 RSpec.configure do |config|

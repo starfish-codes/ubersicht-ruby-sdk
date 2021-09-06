@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'faraday', ['>= 0.9.2', '< 2']
 
   spec.add_development_dependency 'bundler', '~> 2.0'
+  spec.add_development_dependency 'pry'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop', '~> 1.0'
@@ -40,4 +41,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop-rake', '~> 0.6'
   spec.add_development_dependency 'rubocop-rspec', '~> 2.0'
   spec.add_development_dependency 'simplecov', '~> 0.1'
+  spec.add_development_dependency 'webmock'
 end

@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  gem:
+    container_name: ubersicht_ruby_sdk
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app
+      - ~/.gitconfig:/etc/gitconfig # allows to create commits inside container
+      - bundle_path:/usr/local/bundle
+    stdin_open: true
+    tty: true
+volumes:
+  bundle_path:

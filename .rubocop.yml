@@ -1,0 +1,57 @@
+require:
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
+
+inherit_mode:
+  merge:
+    - Include
+
+AllCops:
+  Include:
+    - "**/*.gemspec"
+    - "**/*.rake"
+    - "**/Gemfile"
+    - "**/Rakefile"
+  Exclude:
+    - "bin/**/*"
+    - "config.ru"
+  CacheRootDirectory: tmp/cache/rubocop_cache/
+  TargetRubyVersion: '2.6'
+  DefaultFormatter: fuubar
+  NewCops: enable
+
+Layout/EndOfLine:
+  EnforcedStyle: lf
+
+Layout/LineLength:
+  Max: 120
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+  IndentationWidth: 2
+
+Lint/AmbiguousBlockAssociation:
+  Exclude:
+    - "spec/**/*"
+
+Metrics/BlockLength:
+  Enabled: false
+
+Performance/MethodObjectAsBlock:
+  Enabled: false
+
+RSpec/AnyInstance:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false

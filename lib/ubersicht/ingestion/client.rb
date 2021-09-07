@@ -1,10 +1,6 @@
 module Ubersicht
   module Ingestion
     class Client
-      PROVIDERS = [
-        DAUTH_PROVIDER = 'DAuth'.freeze
-      ].freeze
-
       def self.default(*args)
         new(*args) do |faraday|
           faraday.request :url_encoded
@@ -22,7 +18,7 @@ module Ubersicht
         raise ArgumentError, 'Password cannot be blank' if empty?(pass = options[:pass])
         raise ArgumentError, 'Url cannot be blank' if empty?(url = options[:url])
         raise ArgumentError, 'Username cannot be blank' if empty?(user = options[:user])
-        unless PROVIDERS.include?(provider = options[:provider])
+        unless ::Ubersicht::Ingestion::PROVIDERS.include?(provider = options[:provider])
           raise ArgumentError, "Not supported provider '#{provider}'"
         end
 
@@ -34,7 +30,7 @@ module Ubersicht
 
       def ingest_events(events)
         body = {
-          events: events.map { |event| ::Ubersicht::Ingestion::BuildIngestionEvent.call(event, hmac_key) }
+          events: events.map { |event| ::Ubersicht::Ingestion::BuildIngestionEvent.call(event, hmac_key, provider) }
         }
         url = "accounts/#{account_id}/plugins/#{provider.downcase}/notification_webhooks"
         handle_response(@conn.post(url, body.to_json))

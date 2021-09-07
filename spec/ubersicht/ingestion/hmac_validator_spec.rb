@@ -22,36 +22,42 @@ RSpec.describe Ubersicht::Ingestion::HmacValidator do
       }
     end
 
-    it 'gets correct data' do
-      data_to_sign = validator.data_to_sign(notification_request_item)
-      expect(data_to_sign).to eq '7914073381342284::TestMerchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true'
+    context '.data_to_sign' do
+      it 'gets correct data' do
+        data_to_sign = validator.data_to_sign(notification_request_item)
+        expect(data_to_sign).to eq '7914073381342284::TestMerchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true'
+      end
+
+      it 'gets correct data without some fields' do
+        data_to_sign = validator.data_to_sign(notification_request_item.merge(amount: nil))
+        expect(data_to_sign).to eq '7914073381342284::TestMerchant:TestPayment-1407325143704:::AUTHORISATION:true'
+      end
+
+      it 'gets correct data with escaped characters' do
+        notification_request_item['merchantAccountCode'] = 'Test:\\Merchant'
+        data_to_sign = validator.data_to_sign(notification_request_item)
+        expected = '7914073381342284::Test\\:\\Merchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true'
+        expect(data_to_sign).to eq(expected)
+      end
     end
 
-    it 'gets correct data without some fields' do
-      data_to_sign = validator.data_to_sign(notification_request_item.merge(amount: nil))
-      expect(data_to_sign).to eq '7914073381342284::TestMerchant:TestPayment-1407325143704:::AUTHORISATION:true'
+    context '.calculate_notification_hmac' do
+      it 'encrypts properly' do
+        encrypted = validator.calculate_notification_hmac(notification_request_item, key)
+        expect(encrypted).to eq expected_sign
+      end
     end
 
-    it 'gets correct data with escaped characters' do
-      notification_request_item['merchantAccountCode'] = 'Test:\\Merchant'
-      data_to_sign = validator.data_to_sign(notification_request_item)
-      expected = '7914073381342284::Test\\:\\Merchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true'
-      expect(data_to_sign).to eq(expected)
-    end
+    context '.valid_notification_hmac?' do
+      it 'has a valid hmac' do
+        expect(validator).to be_valid_notification_hmac(notification_request_item, key)
+      end
 
-    it 'encrypts properly' do
-      encrypted = validator.calculate_notification_hmac(notification_request_item, key)
-      expect(encrypted).to eq expected_sign
-    end
+      it 'has an invalid hmac' do
+        notification_request_item['additionalData'] = { 'hmacSignature' => 'invalidHMACsign' }
 
-    it 'has a valid hmac' do
-      expect(validator).to be_valid_notification_hmac(notification_request_item, key)
-    end
-
-    it 'has an invalid hmac' do
-      notification_request_item['additionalData'] = { 'hmacSignature' => 'invalidHMACsign' }
-
-      expect(validator).not_to be_valid_notification_hmac(notification_request_item, key)
+        expect(validator).not_to be_valid_notification_hmac(notification_request_item, key)
+      end
     end
   end
 
@@ -72,24 +78,42 @@ RSpec.describe Ubersicht::Ingestion::HmacValidator do
       }
     end
 
-    it 'gets correct data' do
-      data_to_sign = validator.data_to_sign(notification_request_item)
-      expect(data_to_sign).to eq 'f9b07c9e:Authentication:requested:1620208855'
+    context '.data_to_sign' do
+      it 'gets correct data' do
+        data_to_sign = validator.data_to_sign(notification_request_item)
+        expect(data_to_sign).to eq 'f9b07c9e:Authentication:requested:1620208855'
+      end
     end
 
-    it 'encrypts properly' do
-      encrypted = validator.calculate_notification_hmac(notification_request_item, key)
-      expect(encrypted).to eq expected_sign
+    context '.calculate_notification_hmac' do
+      it 'encrypts properly' do
+        encrypted = validator.calculate_notification_hmac(notification_request_item, key)
+        expect(encrypted).to eq expected_sign
+      end
     end
 
-    it 'has a valid hmac' do
-      expect(validator).to be_valid_notification_hmac(notification_request_item, key)
+    context '.valid_notification_hmac?' do
+      it 'has a valid hmac' do
+        expect(validator).to be_valid_notification_hmac(notification_request_item, key)
+      end
+
+      it 'has an invalid hmac' do
+        notification_request_item[:payload] = { hmac_signature: 'invalidHMACsign' }
+
+        expect(validator).not_to be_valid_notification_hmac(notification_request_item, key)
+      end
     end
 
-    it 'has an invalid hmac' do
-      notification_request_item[:payload] = { hmac_signature: 'invalidHMACsign' }
+    context '.valid_notifications?' do
+      it 'has a valid hmac' do
+        expect(validator).to be_valid_notifications([notification_request_item], key)
+      end
 
-      expect(validator).not_to be_valid_notification_hmac(notification_request_item, key)
+      it 'has an invalid hmac' do
+        notification_request_item[:payload] = { hmac_signature: 'invalidHMACsign' }
+
+        expect(validator).not_to be_valid_notifications([notification_request_item], key)
+      end
     end
   end
 end

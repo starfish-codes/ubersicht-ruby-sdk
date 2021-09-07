@@ -60,6 +60,12 @@ module Ubersicht
         expected_sign == merchant_sign
       end
 
+      def valid_notifications?(notification_request_items, hmac_key)
+        notification_request_items.all? do |notification_request_item|
+          valid_notification_hmac?(notification_request_item, hmac_key)
+        end
+      end
+
       private
 
       attr_reader \

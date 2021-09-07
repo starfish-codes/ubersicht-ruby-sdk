@@ -12,7 +12,7 @@ RSpec.describe Ubersicht::Ingestion::Client do
       hmac_key: hmac_key,
       account_id: account_id,
       pass: 'pass',
-      provider: described_class::DAUTH_PROVIDER,
+      provider: ::Ubersicht::Ingestion::DAUTH_PROVIDER,
       url: url,
       user: 'user'
     }.merge(custom)
@@ -75,7 +75,8 @@ RSpec.describe Ubersicht::Ingestion::Client do
             type: event.type,
             payload: event.payload.to_h.merge(
               hmac_signature: hmac_signature
-            )
+            ),
+            provider: Ubersicht::Ingestion::DAUTH_PROVIDER
           }
         ]
       }

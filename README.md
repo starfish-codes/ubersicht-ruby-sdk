@@ -42,35 +42,34 @@ Parameters:
 * `pass` - basic auth password (Ubersicht plugin config)
 * `user` - basic auth username (Ubersicht plugin config)
 * `provider` - plugin provider in Ubersicht platform, e.g. DAuth
-* `url` - Ubersicht API root url, is different testing an production environment
+* `url` - Ubersicht API root url. Different for production and testing environment.
 
-Send events:
+Send event:
 
 ```sh
-  events = [
-    {
-      event_code: 'REQUESTED',
-      event_date: 2021-10-10 10:10:10,
-      transaction_id, 'eb2bc8bb-f584-4801-b98c-361a0c2d38f8',
-      type: 'DeviceBinding'
-      payload, {
-        device_id: '500',
-        user_id: '1000'
-      }
-    }
-  ]
-  client.ingest_events(events)
+  client.ingest(transaction_type, event_code, time, payload = {})
 ```
 
 Attributes:
 
+* `transaction_type` (required) - a process or resource to which event belongs, e.g. DeviceBinding, Authentication
 * `event_code` (required) - string identifier of a transition
-* `event_date` (required) - when event was triggered
-* `type` (required) - a process or resource to which event belongs, e.g. DeviceBinding, Authentication
+* `time` (required) - when event was triggered
 
-* `transaction_id` (optional) - correlated transaction id, which allows to link events together.
-  If is blank then we create a new transaction.
 * `payload` (optional) - additional attributes of event, like device_id, user_id, ...
+* `payload.event_id` - unique event identifier (allows to silence duplicated events)
+* `payload.event_group_id` - correlated transaction id (allows to link some events together)
+
+Example:
+
+```sh
+  payload = {
+    event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508',
+    event_group_id: 'eb2bc8bb-f584-4801-b98c-361a0c2d38f8',
+    ... other attributes ...
+  }
+  client.ingest('DeviceBinding', 'REQUESTED', '2021-10-10 10:10:10', payload)
+```
 
 ## Development
 

@@ -22,10 +22,11 @@ RSpec.describe Ubersicht::Ingestion::HmacValidator do
       }
     end
 
-    context '.data_to_sign' do
+    describe '.data_to_sign' do
       it 'gets correct data' do
         data_to_sign = validator.data_to_sign(notification_request_item)
-        expect(data_to_sign).to eq '7914073381342284::TestMerchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true'
+        expect(data_to_sign)
+          .to eq '7914073381342284::TestMerchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true'
       end
 
       it 'gets correct data without some fields' do
@@ -41,14 +42,14 @@ RSpec.describe Ubersicht::Ingestion::HmacValidator do
       end
     end
 
-    context '.calculate_notification_hmac' do
+    describe '.calculate_notification_hmac' do
       it 'encrypts properly' do
         encrypted = validator.calculate_notification_hmac(notification_request_item, key)
         expect(encrypted).to eq expected_sign
       end
     end
 
-    context '.valid_notification_hmac?' do
+    describe '.valid_notification_hmac?' do
       it 'has a valid hmac' do
         expect(validator).to be_valid_notification_hmac(notification_request_item, key)
       end
@@ -65,34 +66,35 @@ RSpec.describe Ubersicht::Ingestion::HmacValidator do
     subject(:validator) { described_class.with_ubersicht }
 
     let(:key) { '44782DEF547AAA06C910C43932B1EB0C71FC68D9D0C057550C48EC2ACF6BA056' }
-    let(:expected_sign) { 'X4jyYrXqIf1EDDpyHVXoPrzME2WWRfRgjgwOKtHe6JM=' }
+    let(:expected_sign) { 'Bzkje8mvjdLcWkDaY98Vd3ytywfeNVEaDgaTjpscTjo=' }
     let(:notification_request_item) do
       {
         payload: {
+          event_group_id: 'some-event-group-id',
+          event_id: 'some-event-id',
           hmac_signature: expected_sign
         },
         event_code: 'requested',
         event_date: Time.parse('2021-05-05 10:00:55'),
-        transaction_id: 'f9b07c9e',
-        type: 'Authentication'
+        transaction_type: 'Authentication'
       }
     end
 
-    context '.data_to_sign' do
+    describe '.data_to_sign' do
       it 'gets correct data' do
         data_to_sign = validator.data_to_sign(notification_request_item)
-        expect(data_to_sign).to eq 'f9b07c9e:Authentication:requested:1620208855'
+        expect(data_to_sign).to eq 'some-event-group-id:some-event-id:Authentication:requested:1620208855'
       end
     end
 
-    context '.calculate_notification_hmac' do
+    describe '.calculate_notification_hmac' do
       it 'encrypts properly' do
         encrypted = validator.calculate_notification_hmac(notification_request_item, key)
         expect(encrypted).to eq expected_sign
       end
     end
 
-    context '.valid_notification_hmac?' do
+    describe '.valid_notification_hmac?' do
       it 'has a valid hmac' do
         expect(validator).to be_valid_notification_hmac(notification_request_item, key)
       end
@@ -104,7 +106,7 @@ RSpec.describe Ubersicht::Ingestion::HmacValidator do
       end
     end
 
-    context '.valid_notifications?' do
+    describe '.valid_notifications?' do
       it 'has a valid hmac' do
         expect(validator).to be_valid_notifications([notification_request_item], key)
       end

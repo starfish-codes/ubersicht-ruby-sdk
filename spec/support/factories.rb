@@ -4,9 +4,9 @@ module TestHelpers
       defaults = {
         event_code: 'some-code',
         event_date: Time.now.round,
-        type: 'DeviceBinding'
-        # transaction_id: 'some-transaction-id',
+        transaction_type: 'DeviceBinding'
         # payload: {
+        #   event_group_id: 'some-transaction-id',
         #   test_field: 'test value'
         # }
       }

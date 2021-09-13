@@ -10,4 +10,5 @@ require 'ubersicht/ingestion/hmac_validator'
 
 module Ubersicht
   Error = Class.new(StandardError)
+  ValidationError = Class.new(Error)
 end

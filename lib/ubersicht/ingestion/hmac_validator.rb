@@ -16,8 +16,9 @@ module Ubersicht
                                  success].freeze
 
       UBERSICHT_HMAC_SIGNATURE_PATH = 'payload.hmac_signature'.freeze
-      UBERSICHT_VALIDATION_KEYS = %w[transaction_id
-                                     type
+      UBERSICHT_VALIDATION_KEYS = %w[payload.event_group_id
+                                     payload.event_id
+                                     transaction_type
                                      event_code
                                      event_date].freeze
 

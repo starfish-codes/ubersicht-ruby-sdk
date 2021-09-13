@@ -28,6 +28,20 @@ module Ubersicht
         @conn = setup_conn(url, user, pass, &block)
       end
 
+      def ingest(transaction_type, event_code, event_date, payload = {})
+        event = {
+          event_code: event_code,
+          event_date: event_date,
+          payload: payload,
+          transaction_type: transaction_type
+        }
+        ingest_events([event])
+      end
+
+      private
+
+      attr_reader :account_id, :hmac_key, :provider
+
       def ingest_events(events)
         body = {
           events: events.map { |event| ::Ubersicht::Ingestion::BuildIngestionEvent.call(event, hmac_key, provider) }
@@ -35,10 +49,6 @@ module Ubersicht
         url = "accounts/#{account_id}/plugins/#{provider.downcase}/notification_webhooks"
         handle_response(@conn.post(url, body.to_json))
       end
-
-      private
-
-      attr_reader :account_id, :hmac_key, :provider
 
       def handle_response(response)
         case response.status

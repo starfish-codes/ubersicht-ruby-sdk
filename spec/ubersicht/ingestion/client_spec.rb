@@ -45,9 +45,9 @@ RSpec.describe Ubersicht::Ingestion::Client do
       default_attrs = {
         event_code: 'some-code',
         event_date: Time.now.round,
-        transaction_id: 'some-transaction-id',
-        type: 'DeviceBinding',
+        transaction_type: 'DeviceBinding',
         payload: {
+          event_group_id: 'some-transaction-id',
           test_field: 'test value'
         }
       }
@@ -64,17 +64,17 @@ RSpec.describe Ubersicht::Ingestion::Client do
       stub_request(:post, build_url)
         .to_return(status: Ubersicht::Ingestion::ACCEPTED_STATUS, body: Ubersicht::Ingestion::ACCEPTED_RESPONSE)
 
-      client.ingest_events([event])
+      client.ingest(event.transaction_type, event.event_code, event.event_date, event.payload)
 
       body = {
         events: [
           {
             event_code: event.event_code,
             event_date: event.event_date,
-            transaction_id: event.transaction_id,
-            type: event.type,
+            transaction_type: event.transaction_type,
             payload: event.payload.to_h.merge(
-              hmac_signature: hmac_signature
+              hmac_signature: hmac_signature,
+              event_group_id: event.payload[:event_group_id]
             ),
             provider: Ubersicht::Ingestion::DAUTH_PROVIDER
           }
@@ -86,11 +86,21 @@ RSpec.describe Ubersicht::Ingestion::Client do
       expect(WebMock).to have_requested(:post, build_url).with(body: body.to_json, headers: headers)
     end
 
+    it 'rejects invalid event' do
+      message = /:event_code violates constraints/
+      expect do
+        client.ingest(build_event[:transaction_type], nil, nil)
+      end.to raise_error(Ubersicht::ValidationError, message)
+    end
+
     it 'responds with exception' do
       stub_request(:post, build_url)
         .to_return(status: Ubersicht::Ingestion::REJECTED_STATUS, body: Ubersicht::Ingestion::REJECTED_RESPONSE)
 
-      expect { client.ingest_events([event]) }.to raise_error(Ubersicht::Error, /rejected/)
+      expect do
+        client.ingest(event.transaction_type, event.event_code,
+                      event.event_date)
+      end.to raise_error(Ubersicht::Error, /rejected/)
     end
   end
 end

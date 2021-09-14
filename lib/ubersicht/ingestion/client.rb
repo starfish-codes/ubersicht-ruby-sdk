@@ -12,7 +12,7 @@ module Ubersicht
         end
       end
 
-      def initialize(options = {}, &block) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def initialize(options = {}, &block) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
         raise ArgumentError, 'Account id cannot be blank' if empty?(account_id = options[:account_id])
         raise ArgumentError, 'Hmac key cannot be blank' if empty?(hmac_key = options[:hmac_key])
         raise ArgumentError, 'Password cannot be blank' if empty?(pass = options[:pass])
@@ -23,12 +23,13 @@ module Ubersicht
         end
 
         @account_id = account_id
+        @debug = options[:debug] || false
         @hmac_key = hmac_key
         @provider = provider
         @conn = setup_conn(url, user, pass, &block)
       end
 
-      def ingest(transaction_type, event_code, event_date, payload = {})
+      def ingest(transaction_type:, event_code:, event_date: Time.now, **payload)
         event = {
           event_code: event_code,
           event_date: event_date,
@@ -40,14 +41,21 @@ module Ubersicht
 
       private
 
-      attr_reader :account_id, :hmac_key, :provider
+      attr_reader :account_id, :debug, :hmac_key, :provider
 
       def ingest_events(events)
         body = {
           events: events.map { |event| ::Ubersicht::Ingestion::BuildIngestionEvent.call(event, hmac_key, provider) }
         }
         url = "accounts/#{account_id}/plugins/#{provider.downcase}/notification_webhooks"
-        handle_response(@conn.post(url, body.to_json))
+        process { handle_response(@conn.post(url, body.to_json)) }
+      end
+
+      def process(&block)
+        return yield if debug
+
+        Thread.new(&block)
+        nil
       end
 
       def handle_response(response)

@@ -7,7 +7,8 @@ This is the officially supported Ruby library for using Ubersicht's APIs.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'ubersicht-ruby-sdk'
+gem 'ubersicht-ruby-sdk', git: 'https://github.com/starfish-codes/ubersicht-ruby-sdk.git',
+                          branch: 'main', require: 'ubersicht'
 ```
 
 And then execute:
@@ -31,45 +32,43 @@ Build client:
     pass: 'password',
     provider: 'DAuth',
     url: '<api-base-url>',
-    user: 'user'
+    user: 'user',
+    debug: true
   )
 ```
 
 Parameters:
 
-* `hmac_key` - used for signing notification on client side and validation on server side (Ubersicht plugin config)
-* `account_id` - account which receives notification events
-* `pass` - basic auth password (Ubersicht plugin config)
-* `user` - basic auth username (Ubersicht plugin config)
-* `provider` - plugin provider in Ubersicht platform, e.g. DAuth
-* `url` - Ubersicht API root url. Different for production and testing environment.
+* `hmac_key` - (required) used for signing notification on client side and validation on server side (Ubersicht plugin config)
+* `account_id` - (required) account which receives notification events
+* `pass` - (required) basic auth password (Ubersicht plugin config)
+* `user` - (required) basic auth username (Ubersicht plugin config)
+* `provider` - (required) plugin provider in Ubersicht platform, e.g. DAuth
+* `url` - (required) Ubersicht API root url. Different for production and testing environment.
+* `debug` - (optional) default=false. If true then request is performed in the current thread, if false then new thread is created.
 
 Send event:
 
 ```sh
-  client.ingest(transaction_type, event_code, time, payload = {})
+  event = {
+    # required
+    transaction_type: 'DeviceBinding'
+    event_code: 'REQUESTED',
+    # optional
+    event_date: 2021-10-10 10:10:10,
+    event_group_id: 'eb2bc8bb-f584-4801-b98c-361a0c2d38f8',
+    event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508',,
+  }
+  client.ingest(event)
 ```
 
-Attributes:
+Event attributes:
 
 * `transaction_type` (required) - a process or resource to which event belongs, e.g. DeviceBinding, Authentication
 * `event_code` (required) - string identifier of a transition
-* `time` (required) - when event was triggered
-
-* `payload` (optional) - additional attributes of event, like device_id, user_id, ...
-* `payload.event_id` - unique event identifier (allows to silence duplicated events)
-* `payload.event_group_id` - correlated transaction id (allows to link some events together)
-
-Example:
-
-```sh
-  payload = {
-    event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508',
-    event_group_id: 'eb2bc8bb-f584-4801-b98c-361a0c2d38f8',
-    ... other attributes ...
-  }
-  client.ingest('DeviceBinding', 'REQUESTED', '2021-10-10 10:10:10', payload)
-```
+* `event_date` - time when event was triggered
+* `event_group_id` - correlated transaction id (allows to link some events together)
+* `event_id` - unique event identifier (allows to silence duplicated events)
 
 ## Development
 

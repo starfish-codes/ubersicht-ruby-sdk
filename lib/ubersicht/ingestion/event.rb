@@ -9,8 +9,9 @@ module Ubersicht
       attribute :event_date, Types::Time || Types::DateTime
       attribute :transaction_type, Types::String # DeviceBinding
       attribute :payload, Types::Hash.optional.default({}.freeze)
+      # payload.event_date
+      # payload.event_group_id
       # payload.event_id
-      # payload.correlation_id
     end
   end
 end

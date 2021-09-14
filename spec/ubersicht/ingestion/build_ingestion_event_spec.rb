@@ -3,7 +3,10 @@ RSpec.describe Ubersicht::Ingestion::BuildIngestionEvent do
   let(:provider) { Ubersicht::Ingestion::DAUTH_PROVIDER }
 
   it 'returns attributes' do
-    event = ingestion_event.new(payload: { event_group_id: event_group_id = 'some-transaction-id' })
+    payload = {
+      event_group_id: event_group_id = 'some-transaction-id'
+    }
+    event = ingestion_event.new(payload: payload)
     allow_any_instance_of(Ubersicht::Ingestion::HmacValidator).to receive(:calculate_notification_hmac)
       .and_return(signature = 'i8+r3XFTM67R6+pNmvf8+b4fAo9xOd1x8uvUwT4UmBo=')
     expected = {

@@ -27,17 +27,11 @@ module Ubersicht
       end
 
       def self.with_ubersicht
-        transform_value_fn = lambda do |value|
-          next value.to_i if value.respond_to?(:strftime)
-
-          value
-        end
-        new(UBERSICHT_HMAC_SIGNATURE_PATH, UBERSICHT_VALIDATION_KEYS, transform_value_fn: transform_value_fn)
+        new(UBERSICHT_HMAC_SIGNATURE_PATH, UBERSICHT_VALIDATION_KEYS)
       end
 
-      def initialize(hmac_signature_path, validation_keys, transform_value_fn: :itself.to_proc)
+      def initialize(hmac_signature_path, validation_keys)
         @hmac_signature_path = hmac_signature_path
-        @transform_value_fn = transform_value_fn
         @validation_keys = validation_keys
       end
 
@@ -49,7 +43,7 @@ module Ubersicht
 
       def data_to_sign(notification_request_item)
         validation_keys
-          .map { |key| transform_value_fn.call(fetch(notification_request_item, key)).to_s }
+          .map { |key| fetch(notification_request_item, key).to_s }
           .map { |value| value.gsub('\\', '\\\\').gsub(':', '\\:') }
           .join(DATA_SEPARATOR)
       end
@@ -71,7 +65,6 @@ module Ubersicht
 
       attr_reader \
         :hmac_signature_path,
-        :transform_value_fn,
         :validation_keys
 
       def fetch(hash, keys)

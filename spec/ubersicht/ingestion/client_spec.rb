@@ -45,7 +45,7 @@ RSpec.describe Ubersicht::Ingestion::Client do
     def build_event(attrs = {})
       default_attrs = {
         event_code: 'some-code',
-        event_date: Time.now.round,
+        event_date: Time.now.round.iso8601(3),
         transaction_type: 'DeviceBinding',
         payload: {
           event_group_id: 'some-transaction-id',
@@ -66,6 +66,7 @@ RSpec.describe Ubersicht::Ingestion::Client do
         .to_return(status: Ubersicht::Ingestion::ACCEPTED_STATUS, body: Ubersicht::Ingestion::ACCEPTED_RESPONSE)
 
       event_attrs = event.attributes.except(:payload).merge(event.payload)
+      event_attrs[:event_date] = Time.parse(event_attrs[:event_date])
       expect(client.ingest(**event_attrs)).to eq(Ubersicht::Ingestion::ACCEPTED_RESPONSE)
 
       body = {
@@ -95,7 +96,8 @@ RSpec.describe Ubersicht::Ingestion::Client do
         .to_return(status: Ubersicht::Ingestion::ACCEPTED_STATUS, body: Ubersicht::Ingestion::ACCEPTED_RESPONSE)
 
       client = build_client(debug: false)
-      expect(client.ingest(**event.attributes)).to be_nil
+      event_attrs = event.attributes.merge(event_date: Time.parse(event.event_date))
+      expect(client.ingest(**event_attrs)).to be_nil
     end
 
     it 'rejects event without event_code' do
@@ -112,7 +114,8 @@ RSpec.describe Ubersicht::Ingestion::Client do
       stub_request(:post, build_url)
         .to_return(status: Ubersicht::Ingestion::REJECTED_STATUS, body: Ubersicht::Ingestion::REJECTED_RESPONSE)
 
-      expect { client.ingest(**event.attributes) }.to raise_error(Ubersicht::Error, /rejected/)
+      event_attrs = event.attributes.merge(event_date: Time.parse(event.event_date))
+      expect { client.ingest(**event_attrs) }.to raise_error(Ubersicht::Error, /rejected/)
     end
   end
 end

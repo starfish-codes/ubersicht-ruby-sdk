@@ -59,7 +59,7 @@ Send event:
     event_group_id: 'eb2bc8bb-f584-4801-b98c-361a0c2d38f8',
     event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508',,
   }
-  client.ingest(event)
+  client.ingest(**event)
 ```
 
 Event attributes:

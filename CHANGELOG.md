@@ -1,4 +1,5 @@
 ## Not released
+## 0.2.0
 
 - [ingestion] added `event.payload.event_id` to prevent events duplication on Ubersicht side
 - [ingestion] added `event.payload.event_id` to event signature

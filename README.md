@@ -7,6 +7,12 @@ This is the officially supported Ruby library for using Ubersicht's APIs.
 Add this line to your application's Gemfile:
 
 ```ruby
+gem 'ubersicht-ruby-sdk', '0.2.0', require: 'ubersicht'
+```
+
+The latest `main` branch:
+
+```ruby
 gem 'ubersicht-ruby-sdk', git: 'https://github.com/starfish-codes/ubersicht-ruby-sdk.git',
                           branch: 'main', require: 'ubersicht'
 ```

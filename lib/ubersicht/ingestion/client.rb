@@ -32,7 +32,7 @@ module Ubersicht
       def ingest(transaction_type:, event_code:, event_date: Time.now, **payload)
         event = {
           event_code: event_code,
-          event_date: event_date,
+          event_date: event_date.iso8601(3),
           payload: payload,
           transaction_type: transaction_type
         }

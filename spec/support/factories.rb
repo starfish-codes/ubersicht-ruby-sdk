@@ -3,7 +3,7 @@ module TestHelpers
     def ingestion_event(attrs = {})
       defaults = {
         event_code: 'some-code',
-        event_date: Time.now.round,
+        event_date: Time.now.round.iso8601(3),
         transaction_type: 'DeviceBinding'
         # payload: {
         #   event_group_id: 'some-transaction-id',

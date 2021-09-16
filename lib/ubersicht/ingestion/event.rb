@@ -6,7 +6,7 @@ module Ubersicht
 
     class Event < ::Dry::Struct
       attribute :event_code, Types::String
-      attribute :event_date, Types::Time || Types::DateTime
+      attribute :event_date, Types::String
       attribute :transaction_type, Types::String # DeviceBinding
       attribute :payload, Types::Hash.optional.default({}.freeze)
       # payload.event_date

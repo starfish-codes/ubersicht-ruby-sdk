@@ -66,7 +66,7 @@ RSpec.describe Ubersicht::Ingestion::HmacValidator do
     subject(:validator) { described_class.with_ubersicht }
 
     let(:key) { '44782DEF547AAA06C910C43932B1EB0C71FC68D9D0C057550C48EC2ACF6BA056' }
-    let(:expected_sign) { 'Bzkje8mvjdLcWkDaY98Vd3ytywfeNVEaDgaTjpscTjo=' }
+    let(:expected_sign) { 'K4kwg9bCC9RiQsluvTBjZ6m1FKsVA7gGR6byCfJrQ/E=' }
     let(:notification_request_item) do
       {
         payload: {
@@ -75,15 +75,16 @@ RSpec.describe Ubersicht::Ingestion::HmacValidator do
           hmac_signature: expected_sign
         },
         event_code: 'requested',
-        event_date: Time.parse('2021-05-05 10:00:55'),
+        event_date: Time.parse('2021-05-05 10:00:55.011'),
         transaction_type: 'Authentication'
       }
     end
 
     describe '.data_to_sign' do
       it 'gets correct data' do
-        data_to_sign = validator.data_to_sign(notification_request_item)
-        expect(data_to_sign).to eq 'some-event-group-id:some-event-id:Authentication:requested:1620208855'
+        actual = validator.data_to_sign(notification_request_item)
+        expected = 'some-event-group-id:some-event-id:Authentication:requested:2021-05-05 10\\:00\\:55 +0000'
+        expect(actual).to eq(expected)
       end
     end
 

@@ -5,13 +5,12 @@ module Ubersicht
     end
 
     class Event < ::Dry::Struct
-      attribute :event_code, Types::String
-      attribute :event_date, Types::String
-      attribute :transaction_type, Types::String # DeviceBinding
-      attribute :payload, Types::Hash.optional.default({}.freeze)
-      # payload.event_date
-      # payload.event_group_id
-      # payload.event_id
+      attribute :id, Types::String
+      attribute :type, Types::String
+      attribute :source, Types::String
+      attribute :time, Types::String
+      attribute :data, Types::Hash
+      # data.event_group_id
     end
   end
 end

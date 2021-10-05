@@ -12,44 +12,28 @@ module Ubersicht
         end
       end
 
-      def initialize(options = {}, &block) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+      def initialize(options = {}, &block) # rubocop:disable Metrics/AbcSize
         raise ArgumentError, 'Account id cannot be blank' if empty?(account_id = options[:account_id])
-        raise ArgumentError, 'Hmac key cannot be blank' if empty?(hmac_key = options[:hmac_key])
         raise ArgumentError, 'Password cannot be blank' if empty?(pass = options[:pass])
         raise ArgumentError, 'Url cannot be blank' if empty?(url = options[:url])
         raise ArgumentError, 'Username cannot be blank' if empty?(user = options[:user])
-        unless ::Ubersicht::Ingestion::PROVIDERS.include?(provider = options[:provider])
-          raise ArgumentError, "Not supported provider '#{provider}'"
-        end
+        raise ArgumentError, 'Provider cannot be blank' if empty?(provider = options[:provider])
 
-        @account_id = account_id
         @debug = options[:debug] || false
-        @hmac_key = hmac_key
-        @provider = provider
+        @source_prefix = "account_#{account_id}.#{provider}"
         @conn = setup_conn(url, user, pass, &block)
       end
 
-      def ingest(transaction_type:, event_code:, event_date: Time.now, **payload)
-        event = {
-          event_code: event_code,
-          event_date: event_date.iso8601(3),
-          payload: payload,
-          transaction_type: transaction_type
+      def ingest(id, source_type, type, data: {})
+        body = {
+          event: Ubersicht::Ingestion::BuildEvent.call(id, source_prefix, source_type, type, data)
         }
-        ingest_events([event])
+        process { handle_response(@conn.post('api/v1/events', body.to_json)) }
       end
 
       private
 
-      attr_reader :account_id, :debug, :hmac_key, :provider
-
-      def ingest_events(events)
-        body = {
-          events: events.map { |event| ::Ubersicht::Ingestion::BuildIngestionEvent.call(event, hmac_key, provider) }
-        }
-        url = "accounts/#{account_id}/plugins/#{provider.downcase}/notification_webhooks"
-        process { handle_response(@conn.post(url, body.to_json)) }
-      end
+      attr_reader :debug, :source_prefix
 
       def process(&block)
         return yield if debug

@@ -1,11 +1,15 @@
 ## Not released
+
+Breaking changes:
+- [ingestion] changed ingestion DSL to CloudEvent specific `client.ingest(id, source_type, type, data: data)`
+
 ## 0.2.0
 
 - [ingestion] added `event.payload.event_id` to prevent events duplication on Ubersicht side
 - [ingestion] added `event.payload.event_id` to event signature
 - [ingestion] added `debug` option to ingestion client. If false then request will be ran in a new thread.
 
-Braking changes:
+Breaking changes:
 
 - [ingestion] replaced `ingest` signature to keywords
 - [ingestion] renamed `event.type` with `event.transaction_type`

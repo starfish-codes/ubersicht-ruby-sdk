@@ -2,54 +2,47 @@ module Ubersicht
   module Ingestion
     class Client
       def self.default(*args)
+        require 'logger'
+
         new(*args) do |faraday|
           faraday.request :url_encoded
           # faraday.response :raise_error
-          faraday.response :logger, Logger.new($stdout),
+          faraday.response :logger, ::Logger.new($stdout),
                            headers: { request: false, response: false },
                            bodies: { request: true, response: true }
           faraday.adapter  Faraday.default_adapter # make requests with Net::HTTP
         end
       end
 
-      def initialize(options = {}, &block) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+      def initialize(options = {}, &block)
         raise ArgumentError, 'Account id cannot be blank' if empty?(account_id = options[:account_id])
-        raise ArgumentError, 'Hmac key cannot be blank' if empty?(hmac_key = options[:hmac_key])
         raise ArgumentError, 'Password cannot be blank' if empty?(pass = options[:pass])
         raise ArgumentError, 'Url cannot be blank' if empty?(url = options[:url])
         raise ArgumentError, 'Username cannot be blank' if empty?(user = options[:user])
-        unless ::Ubersicht::Ingestion::PROVIDERS.include?(provider = options[:provider])
-          raise ArgumentError, "Not supported provider '#{provider}'"
-        end
 
         @account_id = account_id
         @debug = options[:debug] || false
-        @hmac_key = hmac_key
-        @provider = provider
         @conn = setup_conn(url, user, pass, &block)
       end
 
-      def ingest(transaction_type:, event_code:, event_date: Time.now, **payload)
-        event = {
-          event_code: event_code,
-          event_date: event_date.iso8601(3),
-          payload: payload,
-          transaction_type: transaction_type
+      def ingest(transaction_type, event_code, payload = {}) # rubocop:disable Metrics/MethodLength
+        raise ArgumentError, 'Transaction type cannot be blank' if empty?(transaction_type)
+        raise ArgumentError, 'Event code cannot be blank' if empty?(event_code)
+
+        body = {
+          event: {
+            event_code: event_code,
+            transaction_type: transaction_type,
+            payload: payload
+          }
         }
-        ingest_events([event])
+        url = "api/v1/accounts/#{account_id}/events"
+        process { handle_response(@conn.post(url, body.to_json)) }
       end
 
       private
 
-      attr_reader :account_id, :debug, :hmac_key, :provider
-
-      def ingest_events(events)
-        body = {
-          events: events.map { |event| ::Ubersicht::Ingestion::BuildIngestionEvent.call(event, hmac_key, provider) }
-        }
-        url = "accounts/#{account_id}/plugins/#{provider.downcase}/notification_webhooks"
-        process { handle_response(@conn.post(url, body.to_json)) }
-      end
+      attr_reader :account_id, :debug
 
       def process(&block)
         return yield if debug

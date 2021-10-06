@@ -9,11 +9,9 @@ RSpec.describe Ubersicht::Ingestion::Client do
 
   def build_options(custom = {})
     {
-      debug: true,
-      hmac_key: hmac_key,
       account_id: account_id,
+      debug: true,
       pass: 'pass',
-      provider: ::Ubersicht::Ingestion::DAUTH_PROVIDER,
       url: url,
       user: 'user'
     }.merge(custom)
@@ -23,11 +21,8 @@ RSpec.describe Ubersicht::Ingestion::Client do
     it { expect(build_client).to be_a(described_class) }
     it { expect { build_client(account_id: '') }.to raise_error(ArgumentError, /Account id/) }
     it { expect { build_client(account_id: nil) }.to raise_error(ArgumentError, /Account id/) }
-    it { expect { build_client(hmac_key: '') }.to raise_error(ArgumentError, /Hmac/) }
-    it { expect { build_client(hmac_key: nil) }.to raise_error(ArgumentError, /Hmac/) }
     it { expect { build_client(pass: '') }.to raise_error(ArgumentError, /Password/) }
     it { expect { build_client(pass: nil) }.to raise_error(ArgumentError, /Password/) }
-    it { expect { build_client(provider: 'unknown') }.to raise_error(ArgumentError, /provider/) }
     it { expect { build_client(url: '') }.to raise_error(ArgumentError, /Url/) }
     it { expect { build_client(url: nil) }.to raise_error(ArgumentError, /Url/) }
     it { expect { build_client(user: '') }.to raise_error(ArgumentError, /Username/) }
@@ -45,43 +40,27 @@ RSpec.describe Ubersicht::Ingestion::Client do
     def build_event(attrs = {})
       default_attrs = {
         event_code: 'some-code',
-        event_date: Time.now.round.iso8601(3),
         transaction_type: 'DeviceBinding',
         payload: {
+          event_date: Time.now.round.iso8601(3),
           event_group_id: 'some-transaction-id',
           test_field: 'test value'
         }
       }
-      ::Ubersicht::Ingestion::Event.new(default_attrs.merge(attrs))
+      default_attrs.merge(attrs)
     end
 
     def build_url
-      "#{url}/accounts/#{account_id}/plugins/dauth/notification_webhooks"
+      "#{url}/api/v1/accounts/#{account_id}/events"
     end
 
     it 'ingests data' do
-      allow_any_instance_of(Ubersicht::Ingestion::HmacValidator).to receive(:calculate_notification_hmac)
-        .with(any_args, hmac_key).and_return(hmac_signature = 'some-hmac-signature')
-      stub_request(:post, build_url)
-        .to_return(status: Ubersicht::Ingestion::ACCEPTED_STATUS, body: Ubersicht::Ingestion::ACCEPTED_RESPONSE)
+      stub_request(:post, build_url).to_return(status: 200, body: body = 'OK')
 
-      event_attrs = event.attributes.except(:payload).merge(event.payload)
-      event_attrs[:event_date] = Time.parse(event_attrs[:event_date])
-      expect(client.ingest(**event_attrs)).to eq(Ubersicht::Ingestion::ACCEPTED_RESPONSE)
+      expect(client.ingest(event.fetch(:transaction_type), event.fetch(:event_code), event.fetch(:payload))).to eq(body)
 
       body = {
-        events: [
-          {
-            event_code: event.event_code,
-            event_date: event.event_date,
-            transaction_type: event.transaction_type,
-            payload: event.payload.to_h.merge(
-              hmac_signature: hmac_signature,
-              event_group_id: event.payload[:event_group_id]
-            ),
-            provider: Ubersicht::Ingestion::DAUTH_PROVIDER
-          }
-        ]
+        event: event
       }
       headers = {
         'Authorization' => 'Basic dXNlcjpwYXNz'
@@ -90,32 +69,24 @@ RSpec.describe Ubersicht::Ingestion::Client do
     end
 
     it 'ingests with debug=false' do
-      allow_any_instance_of(Ubersicht::Ingestion::HmacValidator).to receive(:calculate_notification_hmac)
-        .with(any_args, hmac_key)
-      stub_request(:post, build_url)
-        .to_return(status: Ubersicht::Ingestion::ACCEPTED_STATUS, body: Ubersicht::Ingestion::ACCEPTED_RESPONSE)
+      stub_request(:post, build_url).to_return(status: 200)
 
       client = build_client(debug: false)
-      event_attrs = event.attributes.merge(event_date: Time.parse(event.event_date))
-      expect(client.ingest(**event_attrs)).to be_nil
+      expect(client.ingest('test', 'test')).to be_nil
     end
 
     it 'rejects event without event_code' do
-      event_attrs = build_event.attributes.except(:event_code)
-      expect { client.ingest(**event_attrs) }.to raise_error(ArgumentError, 'missing keyword: :event_code')
+      expect { client.ingest('test', nil) }.to raise_error(ArgumentError, 'Event code cannot be blank')
     end
 
     it 'rejects event without transaction_type' do
-      event_attrs = build_event.attributes.except(:transaction_type)
-      expect { client.ingest(**event_attrs) }.to raise_error(ArgumentError, 'missing keyword: :transaction_type')
+      expect { client.ingest(nil, 'test') }.to raise_error(ArgumentError, 'Transaction type cannot be blank')
     end
 
     it 'responds with exception' do
-      stub_request(:post, build_url)
-        .to_return(status: Ubersicht::Ingestion::REJECTED_STATUS, body: Ubersicht::Ingestion::REJECTED_RESPONSE)
+      stub_request(:post, build_url).to_return(status: 422, body: 'rejected')
 
-      event_attrs = event.attributes.merge(event_date: Time.parse(event.event_date))
-      expect { client.ingest(**event_attrs) }.to raise_error(Ubersicht::Error, /rejected/)
+      expect { client.ingest('test', 'test') }.to raise_error(Ubersicht::Error, /rejected/)
     end
   end
 end

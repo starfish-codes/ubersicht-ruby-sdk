@@ -33,10 +33,8 @@ Build client:
 
 ```sh
   client = Ubersicht::Ingestion::Client.new(
-    hmac_key: '44782DEF547AAA06C910C43932B1EB0C71FC68D9D0C057550C48EC2ACF6BA056',
     account_id: '1001',
     pass: 'password',
-    provider: 'DAuth',
     url: '<api-base-url>',
     user: 'user',
     debug: true
@@ -45,27 +43,25 @@ Build client:
 
 Parameters:
 
-* `hmac_key` - (required) used for signing notification on client side and validation on server side (Ubersicht plugin config)
 * `account_id` - (required) account which receives notification events
 * `pass` - (required) basic auth password (Ubersicht plugin config)
 * `user` - (required) basic auth username (Ubersicht plugin config)
-* `provider` - (required) plugin provider in Ubersicht platform, e.g. DAuth
 * `url` - (required) Ubersicht API root url. Different for production and testing environment.
 * `debug` - (optional) default=false. If true then request is performed in the current thread, if false then new thread is created.
 
 Send event:
 
 ```sh
-  event = {
-    # required
-    transaction_type: 'DeviceBinding'
-    event_code: 'REQUESTED',
-    # optional
+  # required
+  transaction_type = 'DeviceBinding'
+  event_code = 'REQUESTED'
+
+  payload = {
     event_date: 2021-10-10 10:10:10,
     event_group_id: 'eb2bc8bb-f584-4801-b98c-361a0c2d38f8',
-    event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508',,
+    event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508',
   }
-  client.ingest(**event)
+  client.ingest(transaction_type, event_code, payload)
 ```
 
 Event attributes:

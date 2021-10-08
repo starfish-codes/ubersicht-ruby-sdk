@@ -15,17 +15,14 @@ module Ubersicht
       end
 
       def initialize(options = {}, &block)
-        raise ArgumentError, 'Account id cannot be blank' if empty?(account_id = options[:account_id])
-        raise ArgumentError, 'Password cannot be blank' if empty?(pass = options[:pass])
+        raise ArgumentError, 'Token cannot be blank' if empty?(token = options[:token])
         raise ArgumentError, 'Url cannot be blank' if empty?(url = options[:url])
-        raise ArgumentError, 'Username cannot be blank' if empty?(user = options[:user])
 
-        @account_id = account_id
         @debug = options[:debug] || false
-        @conn = setup_conn(url, user, pass, &block)
+        @conn = setup_conn(url, token, &block)
       end
 
-      def ingest(transaction_type, event_code, payload = {}) # rubocop:disable Metrics/MethodLength
+      def ingest(transaction_type, event_code, payload = {})
         raise ArgumentError, 'Transaction type cannot be blank' if empty?(transaction_type)
         raise ArgumentError, 'Event code cannot be blank' if empty?(event_code)
 
@@ -36,13 +33,12 @@ module Ubersicht
             payload: payload
           }
         }
-        url = "api/v1/accounts/#{account_id}/events"
-        process { handle_response(@conn.post(url, body.to_json)) }
+        process { handle_response(@conn.post('api/v1/events', body.to_json)) }
       end
 
       private
 
-      attr_reader :account_id, :debug
+      attr_reader :debug
 
       def process(&block)
         return yield if debug
@@ -64,14 +60,14 @@ module Ubersicht
         value.to_s.empty?
       end
 
-      def setup_conn(url, user, pass)
+      def setup_conn(url, token)
         headers = {
           'Content-Type' => 'application/json'
         }
-        Faraday.new(url: url, headers: headers) do |faraday|
-          faraday.request(:basic_auth, user, pass)
+        Faraday.new(url: url, headers: headers) do |conn|
+          conn.request :token_auth, token
 
-          yield(faraday) if block_given?
+          yield(conn) if block_given?
         end
       end
     end

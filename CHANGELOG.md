@@ -1,8 +1,13 @@
 ## Not released
 
+## 0.3.0
+
 Breaking changes:
 - [ingestion] replace basic auth with token based authentication
-- [ingestion] changed singnature of from keywords to arguments in `ingest` method
+- [ingestion] changed singnature from keywords to arguments in `ingest` method
+- [ingestion] removed username from client constructor
+- [ingestion] removed password from client constructor
+- [ingestion] removed account_id from client constructor
 - [ingestion] removed HMAC key from client constructor
 - [ingestion] removed provider key from client constructor
 

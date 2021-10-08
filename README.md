@@ -33,19 +33,15 @@ Build client:
 
 ```sh
   client = Ubersicht::Ingestion::Client.new(
-    account_id: '1001',
-    pass: 'password',
+    token: '<ubersicht-plugin-token>',
     url: '<api-base-url>',
-    user: 'user',
     debug: true
   )
 ```
 
 Parameters:
 
-* `account_id` - (required) account which receives notification events
-* `pass` - (required) basic auth password (Ubersicht plugin config)
-* `user` - (required) basic auth username (Ubersicht plugin config)
+* `token` - (required) authentication token for Ubersicth plugin.
 * `url` - (required) Ubersicht API root url. Different for production and testing environment.
 * `debug` - (optional) default=false. If true then request is performed in the current thread, if false then new thread is created.
 

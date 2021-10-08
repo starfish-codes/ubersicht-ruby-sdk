@@ -1,6 +1,5 @@
 RSpec.describe Ubersicht::Ingestion::Client do
-  let(:account_id) { '100' }
-  let(:hmac_key) { '44782DEF547AAA06C910C43932B1EB0C71FC68D9D0C057550C48EC2ACF6BA056' }
+  let(:token) { 'some-api-token' }
   let(:url) { 'http://test.de' }
 
   def build_client(options = {})
@@ -9,24 +8,18 @@ RSpec.describe Ubersicht::Ingestion::Client do
 
   def build_options(custom = {})
     {
-      account_id: account_id,
       debug: true,
-      pass: 'pass',
-      url: url,
-      user: 'user'
+      token: token,
+      url: url
     }.merge(custom)
   end
 
   describe '.new' do
     it { expect(build_client).to be_a(described_class) }
-    it { expect { build_client(account_id: '') }.to raise_error(ArgumentError, /Account id/) }
-    it { expect { build_client(account_id: nil) }.to raise_error(ArgumentError, /Account id/) }
-    it { expect { build_client(pass: '') }.to raise_error(ArgumentError, /Password/) }
-    it { expect { build_client(pass: nil) }.to raise_error(ArgumentError, /Password/) }
+    it { expect { build_client(token: '') }.to raise_error(ArgumentError, /Token/) }
+    it { expect { build_client(token: nil) }.to raise_error(ArgumentError, /Token/) }
     it { expect { build_client(url: '') }.to raise_error(ArgumentError, /Url/) }
     it { expect { build_client(url: nil) }.to raise_error(ArgumentError, /Url/) }
-    it { expect { build_client(user: '') }.to raise_error(ArgumentError, /Username/) }
-    it { expect { build_client(user: nil) }.to raise_error(ArgumentError, /Username/) }
   end
 
   describe '.default' do
@@ -51,7 +44,7 @@ RSpec.describe Ubersicht::Ingestion::Client do
     end
 
     def build_url
-      "#{url}/api/v1/accounts/#{account_id}/events"
+      "#{url}/api/v1/events"
     end
 
     it 'ingests data' do
@@ -63,7 +56,7 @@ RSpec.describe Ubersicht::Ingestion::Client do
         event: event
       }
       headers = {
-        'Authorization' => 'Basic dXNlcjpwYXNz'
+        'Authorization' => %(Token token="#{token}")
       }
       expect(WebMock).to have_requested(:post, build_url).with(body: body.to_json, headers: headers)
     end

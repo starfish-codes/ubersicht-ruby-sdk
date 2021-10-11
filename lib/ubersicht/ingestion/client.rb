@@ -22,14 +22,12 @@ module Ubersicht
         @conn = setup_conn(url, token, &block)
       end
 
-      def ingest(transaction_type, event_code, payload = {})
-        raise ArgumentError, 'Transaction type cannot be blank' if empty?(transaction_type)
-        raise ArgumentError, 'Event code cannot be blank' if empty?(event_code)
+      def ingest(type, payload = {})
+        raise ArgumentError, 'Transaction type cannot be blank' if empty?(type)
 
         body = {
           event: {
-            event_code: event_code,
-            transaction_type: transaction_type,
+            type: type,
             payload: payload
           }
         }

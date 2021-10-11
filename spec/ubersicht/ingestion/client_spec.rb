@@ -27,14 +27,13 @@ RSpec.describe Ubersicht::Ingestion::Client do
   end
 
   describe '.ingest' do
-    let(:event) { build_event }
     let(:client) { build_client }
 
     def build_event(attrs = {})
       default_attrs = {
-        event_code: 'some-code',
-        transaction_type: 'DeviceBinding',
+        type: 'DeviceBinding',
         payload: {
+          event_code: 'some-code',
           event_date: Time.now.round.iso8601(3),
           event_group_id: 'some-transaction-id',
           test_field: 'test value'
@@ -48,9 +47,10 @@ RSpec.describe Ubersicht::Ingestion::Client do
     end
 
     it 'ingests data' do
+      event = build_event
       stub_request(:post, build_url).to_return(status: 200, body: body = 'OK')
 
-      expect(client.ingest(event.fetch(:transaction_type), event.fetch(:event_code), event.fetch(:payload))).to eq(body)
+      expect(client.ingest(event.fetch(:type), event.fetch(:payload))).to eq(body)
 
       body = {
         event: event
@@ -68,12 +68,8 @@ RSpec.describe Ubersicht::Ingestion::Client do
       expect(client.ingest('test', 'test')).to be_nil
     end
 
-    it 'rejects event without event_code' do
-      expect { client.ingest('test', nil) }.to raise_error(ArgumentError, 'Event code cannot be blank')
-    end
-
     it 'rejects event without transaction_type' do
-      expect { client.ingest(nil, 'test') }.to raise_error(ArgumentError, 'Transaction type cannot be blank')
+      expect { client.ingest(nil) }.to raise_error(ArgumentError, 'Transaction type cannot be blank')
     end
 
     it 'responds with exception' do

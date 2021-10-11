@@ -49,21 +49,21 @@ Send event:
 
 ```sh
   # required
-  transaction_type = 'DeviceBinding'
-  event_code = 'REQUESTED'
+  type = 'DeviceBinding'
 
   payload = {
+    event_code: 'REQUESTED',
     event_date: 2021-10-10 10:10:10,
     event_group_id: 'eb2bc8bb-f584-4801-b98c-361a0c2d38f8',
-    event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508',
+    event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508'
   }
-  client.ingest(transaction_type, event_code, payload)
+  client.ingest(type, payload)
 ```
 
 Event attributes:
 
-* `transaction_type` (required) - a process or resource to which event belongs, e.g. DeviceBinding, Authentication
-* `event_code` (required) - string identifier of a transition
+* `type` (required) - a process or resource to which event belongs, e.g. DeviceBinding, Authentication
+* `event_code` - string identifier of a transition
 * `event_date` - time when event was triggered
 * `event_group_id` - correlated transaction id (allows to link some events together)
 * `event_id` - unique event identifier (allows to silence duplicated events)

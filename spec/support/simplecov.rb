@@ -8,6 +8,6 @@ if ENV['CI'] == 'true'
 
     enable_coverage :branch
     primary_coverage :branch
-    minimum_coverage line: 99, branch: 90
+    minimum_coverage line: 99, branch: 89
   end
 end

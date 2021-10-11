@@ -48,7 +48,6 @@ Parameters:
 Send event:
 
 ```sh
-  # required
   type = 'DeviceBinding'
 
   payload = {

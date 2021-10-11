@@ -1,5 +1,7 @@
 ## Not released
 
+## 0.4.0
+
 Breaking changes:
 - [ingestion] move event_code to payload
 

@@ -1,4 +1,6 @@
 ## Not released
+Breaking changes:
+- [ingestion] Added source argument to `ingest` method
 
 ## 0.4.0
 

@@ -1,4 +1,7 @@
 ## Not released
+
+## 0.5.0
+
 Breaking changes:
 - [ingestion] Added source argument to `ingest` method
 

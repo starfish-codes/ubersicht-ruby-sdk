@@ -48,6 +48,7 @@ Parameters:
 Send event:
 
 ```sh
+  source = 'dauth'
   type = 'DeviceBinding'
 
   payload = {
@@ -56,11 +57,12 @@ Send event:
     event_group_id: 'eb2bc8bb-f584-4801-b98c-361a0c2d38f8',
     event_id: 'ed62d0c1-f2a5-41b7-ab58-24c033eec508'
   }
-  client.ingest(type, payload)
+  client.ingest(source, type, payload)
 ```
 
 Event attributes:
 
+* `source` (required) - a source of events, e.g. adyen, dauth
 * `type` (required) - a process or resource to which event belongs, e.g. DeviceBinding, Authentication
 * `event_code` - string identifier of a transition
 * `event_date` - time when event was triggered

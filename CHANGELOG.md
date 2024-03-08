@@ -1,5 +1,10 @@
 ## Not released
 
+## 1.0.0
+
+Breaking changes:
+- Update faraday to 2.0
+
 ## 0.5.0
 
 Breaking changes:

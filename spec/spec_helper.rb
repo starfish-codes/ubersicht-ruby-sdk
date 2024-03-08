@@ -1,7 +1,6 @@
 require 'support/simplecov'
 require 'pry'
 require 'bundler/setup'
-require_relative 'support/simplecov'
 require 'ubersicht_ruby_sdk'
 
 Dir['spec/support/**/*.rb'].each { |f| load f }

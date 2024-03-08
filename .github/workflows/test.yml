@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 2
     strategy:
       matrix:
-        ruby-version: ["3.0.2"]
+        ruby-version: ["3.3.0"]
 
     steps:
       - uses: actions/checkout@v2
@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 2
     strategy:
       matrix:
-        ruby-version: ["3.0.2"]
+        ruby-version: ["3.3.0"]
 
     steps:
       - uses: actions/checkout@v2

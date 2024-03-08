@@ -65,7 +65,7 @@ module Ubersicht
           'Content-Type' => 'application/json'
         }
         Faraday.new(url: url, headers: headers) do |conn|
-          conn.request :token_auth, token
+          conn.request :authorization, 'Token', -> { %(token="#{token}") }
 
           yield(conn) if block_given?
         end

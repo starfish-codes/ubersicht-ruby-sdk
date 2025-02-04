@@ -1,6 +1,6 @@
 # Dockerfile
 # Use ruby image to build our own image
-FROM ruby:3.3.0
+FROM ruby:3.4.1
 
 ARG APP_ROOT=/app
 ARG BUILD_PACKAGES="\
